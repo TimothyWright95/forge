@@ -7,8 +7,8 @@
         <android.manifest.versionCodeUpdateFromVersion>true</android.manifest.versionCodeUpdateFromVersion>
         <android.manifestMerger.versionDigits>2,2,4,2</android.manifestMerger.versionDigits>
         <packaging.type>jar</packaging.type>
-        <build.min.memory>-Xms1024m</build.min.memory>
-        <build.max.memory>-Xmx1536m</build.max.memory>
+        <build.min.memory>-Xms2048m</build.min.memory>
+        <build.max.memory>-Xmx4096m</build.max.memory>
         <sign.keystore>keystore</sign.keystore>
         <sign.alias>alias</sign.alias>
         <sign.storepass>storepass</sign.storepass>
@@ -233,6 +233,132 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>android-debug-new</id>
+            <properties>
+                <android.debug>true</android.debug>
+                <android.run.debug>true</android.run.debug>
+                <android.deployapk.filename>target\forge-android-2.0.04${snapshotName}-04.19-aligned-debugSigned.apk</android.deployapk.filename>
+                <packaging.type>apk</packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.4.1</version>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <executions>
+                            <execution>
+                                <id>SignV2</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <workingDirectory>${pom.basedir}</workingDirectory>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>${pom.basedir}/tools/uber-apk-signer.jar</argument>
+                                <argument>-a</argument>
+                                <argument>${pom.basedir}/target/</argument>
+                                <argument>--debug</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.simpligility.maven.plugins</groupId>
+                        <artifactId>android-maven-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>javax.xml.bind</groupId>
+                                <artifactId>jaxb-api</artifactId>
+                                <version>2.3.1</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.sun.xml.bind</groupId>
+                                <artifactId>jaxb-impl</artifactId>
+                                <version>2.3.4</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>sun</groupId>
+                                <artifactId>misc</artifactId>
+                                <version>1</version>
+                                <scope>system</scope>
+                                <systemPath>${pom.basedir}/libs/sun-misc.jar</systemPath>
+                            </dependency>
+                        </dependencies>
+                        <version>4.6.2</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <manifestDebuggable>true</manifestDebuggable>
+                            <sign>
+                                <debug>false</debug>
+                            </sign>
+                            <sdk>
+                                <platform>${androidPlatform}</platform>
+                                <buildTools>${androidBuildTools}</buildTools>
+                            </sdk>
+                            <dexForceJumbo>true</dexForceJumbo>
+                            <assetsDirectory>${project.basedir}/assets</assetsDirectory>
+                            <resourceDirectory>${project.basedir}/res</resourceDirectory>
+                            <nativeLibrariesDirectory>${project.basedir}/libs</nativeLibrariesDirectory>
+                            <extractDuplicates>true</extractDuplicates>
+                            <proguard>
+                                <skip>false</skip>
+                                <config>${project.basedir}/proguard.cfg</config>
+                            </proguard>
+                            <proguardProguardJarPath>${pom.basedir}/tools/proguard.jar</proguardProguardJarPath>
+                            <release>false</release>
+                            <dexCompiler>d8</dexCompiler>
+                            <d8>
+                                <minApi>26</minApi>
+                                <jvmArguments>
+                                    <argument>${build.min.memory}</argument>
+                                    <argument>${build.max.memory}</argument>
+                                </jvmArguments>
+                            </d8>
+                            <dex>
+                                <multi-dex>true</multi-dex>
+                                <jvmArguments>
+                                    <argument>${build.min.memory}</argument>
+                                    <argument>${build.max.memory}</argument>
+                                </jvmArguments>
+                                <dexArguments>--min-sdk-version=26</dexArguments>
+                            </dex>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>update-manifest</id>
+                                <goals>
+                                    <goal>manifest-merger</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>se.bjurr.gitchangelog</groupId>
+                        <artifactId>git-changelog-maven-plugin</artifactId>
+                        <version>2.2.0</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>GenerateGitChangelog</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>git-changelog</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>android-debug</id>
             <properties>
